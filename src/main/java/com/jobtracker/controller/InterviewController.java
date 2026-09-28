@@ -14,13 +14,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 @RequiredArgsConstructor
 @Tag(name = "Interviews", description = "Schedule and track interview rounds for an application")
 public class InterviewController {
 
     private final InterviewService interviewService;
 
-    @PostMapping("/api/applications/{applicationId}/interviews")
+    @PostMapping("/applications/{applicationId}/interviews")
     public ResponseEntity<Response> schedule(@AuthenticationPrincipal User user,
                                               @PathVariable Long applicationId,
                                               @Valid @RequestBody ScheduleRequest request) {
@@ -28,13 +29,13 @@ public class InterviewController {
                 .body(interviewService.schedule(user.getId(), applicationId, request));
     }
 
-    @GetMapping("/api/applications/{applicationId}/interviews")
+    @GetMapping("/applications/{applicationId}/interviews")
     public ResponseEntity<List<Response>> list(@AuthenticationPrincipal User user,
                                                 @PathVariable Long applicationId) {
         return ResponseEntity.ok(interviewService.listForApplication(user.getId(), applicationId));
     }
 
-    @PatchMapping("/api/interviews/{interviewId}/feedback")
+    @PatchMapping("/interviews/{interviewId}/feedback")
     public ResponseEntity<Response> updateFeedback(@AuthenticationPrincipal User user,
                                                     @PathVariable Long interviewId,
                                                     @RequestBody FeedbackRequest request) {

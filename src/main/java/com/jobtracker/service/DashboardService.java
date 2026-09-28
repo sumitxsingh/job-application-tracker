@@ -37,7 +37,10 @@ public class DashboardService {
                 ));
 
         Map<String, Long> countByStatus = byStatus.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue));
+                .collect(Collectors.toMap(
+                        e -> e.getKey().name(),
+                        (Map.Entry<ApplicationStatus, Long> e) -> e.getValue()
+                ));
 
         long reachedInterview = applications.stream()
                 .filter(a -> REACHED_INTERVIEW.contains(a.getStatus()) || a.getStatus() == ApplicationStatus.OFFERED)
