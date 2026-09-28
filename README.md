@@ -1,4 +1,5 @@
 # Job Application Tracker
+![CI](https://github.com/sumitxsingh/job-application-tracker/actions/workflows/ci.yml/badge.svg)
 
 A backend REST API for tracking job applications through their full lifecycle — applied, screening, interviewing, offered, rejected, or withdrawn — with a status timeline, interview scheduling, and dashboard analytics.
 
