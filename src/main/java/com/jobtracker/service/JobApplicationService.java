@@ -1,6 +1,7 @@
 package com.jobtracker.service;
 
 import com.jobtracker.dto.JobApplicationDtos.*;
+import com.jobtracker.dto.PageResponse;
 import com.jobtracker.entity.ApplicationStageHistory;
 import com.jobtracker.entity.Company;
 import com.jobtracker.entity.JobApplication;
@@ -11,9 +12,15 @@ import com.jobtracker.exception.ResourceNotFoundException;
 import com.jobtracker.repository.CompanyRepository;
 import com.jobtracker.repository.JobApplicationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -57,6 +64,44 @@ public class JobApplicationService {
         return applicationRepository.findByUserId(userId).stream()
                 .map(this::toSummary)
                 .toList();
+    }
+
+    public PageResponse<Summary> search(Long userId, ApplicationStatus status, String company,
+                                        LocalDate from, LocalDate to, int page, int size) {
+
+        Specification<JobApplication> spec =
+                (root, query, cb) -> cb.equal(root.get("user").get("id"), userId);
+
+        if (status != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        }
+        if (company != null && !company.isBlank()) {
+            String pattern = "%" + company.trim().toLowerCase() + "%";
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("company").get("name")), pattern));
+        }
+        if (from != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.<LocalDate>get("appliedDate"), from));
+        }
+        if (to != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.lessThanOrEqualTo(root.<LocalDate>get("appliedDate"), to));
+        }
+
+        Pageable pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.min(Math.max(size, 1), 100),
+                Sort.by(Sort.Direction.DESC, "updatedAt"));
+
+        Page<JobApplication> result = applicationRepository.findAll(spec, pageable);
+
+        return new PageResponse<>(
+                result.getContent().stream().map(this::toSummary).toList(),
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages());
     }
 
     public Response getOwned(Long userId, Long applicationId) {

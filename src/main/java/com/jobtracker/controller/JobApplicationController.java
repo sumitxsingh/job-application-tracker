@@ -1,17 +1,20 @@
 package com.jobtracker.controller;
 
 import com.jobtracker.dto.JobApplicationDtos.*;
+import com.jobtracker.dto.PageResponse;
 import com.jobtracker.entity.User;
+import com.jobtracker.enums.ApplicationStatus;
 import com.jobtracker.service.JobApplicationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/applications")
@@ -28,8 +31,16 @@ public class JobApplicationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Summary>> list(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(applicationService.listForUser(user.getId()));
+    public ResponseEntity<PageResponse<Summary>> list(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) ApplicationStatus status,
+            @RequestParam(required = false) String company,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(
+                applicationService.search(user.getId(), status, company, from, to, page, size));
     }
 
     @GetMapping("/{id}")
