@@ -22,5 +22,14 @@ public interface JobApplicationRepository
            """)
     List<JobApplication> findStaleApplications(@Param("userId") Long userId, @Param("threshold") Instant threshold);
 
+    @Query("""
+           select a from JobApplication a
+           join fetch a.user
+           join fetch a.company
+           where a.status not in ('OFFERED', 'REJECTED', 'WITHDRAWN')
+             and a.updatedAt < :threshold
+           """)
+    List<JobApplication> findAllStale(@Param("threshold") Instant threshold);
+
     long countByUserIdAndStatus(Long userId, com.jobtracker.enums.ApplicationStatus status);
 }

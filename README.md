@@ -28,13 +28,12 @@ Most CRUD portfolio projects stop at create/read/update/delete. This one also de
 
 | Method | Endpoint | Description |
 |--------|----------|--------------|
-| POST | `/api/auth/register` | Register a new user |
-| POST | `/api/auth/login` | Login and get a JWT |
-| POST | `/api/applications` | Create a job application |
-| GET | `/api/applications` | List your applications |
-| GET | `/api/applications/{id}` | Get one application with full status history |
-| PATCH | `/api/applications/{id}/status` | Move an application to a new status (validated transition) |
-| GET | `/api/dashboard/stats` | Aggregate stats: totals, rates, stale applications |
+| GET | `/api/applications?status=&company=&from=&to=&page=&size=` | Search and filter your applications (paginated) |
+| POST | `/api/applications/{id}/interviews` | Schedule an interview |
+| GET | `/api/applications/{id}/interviews` | List interviews for an application |
+| PATCH | `/api/interviews/{id}/feedback` | Add interview feedback |
+| GET | `/api/companies`, `/api/companies/{id}` | Companies referenced by applications |
+| POST / GET | `/api/companies/{id}/contacts` | Add / list contacts at a company |
 
 Full interactive docs at `/swagger-ui.html` once running.
 
@@ -98,20 +97,14 @@ Rules enforced: a `REJECTED` or `WITHDRAWN` application is terminal (no further 
 
 ## Running tests
 
-```bash
-mvn test
-```
-
-Tests run against H2 in-memory, so no Docker is required for the test suite.
+Includes unit tests for the status-transition rules (Mockito) and an end-to-end MockMvc test covering auth, ownership, filtering and dashboard stats.
 
 ## What's next
 
-- JPA `Specification`-based dynamic filtering on `GET /api/applications` (by status, date range, company)
-- Scheduled job to auto-flag stale applications
+- Send real email notifications from the daily stale-application job (it currently logs)
 - Resume/cover-letter upload via multipart + S3-compatible storage
 - Rate-limiting on `/api/auth/login`
-- CI pipeline (GitHub Actions) running `mvn test` on every PR
-- Deploy to Railway/Render for a live demo link
+- Deploy to a cloud host for a live demo link
 
 ## Screenshots
 
